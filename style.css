@@ -105,6 +105,8 @@ img {
       background-image: url("background.png");
       background-color: var(--bg-black-50);
       background-position: inherit;
+       background: url("background.png") center center fixed no-repeat;
+      background-size: cover;
         }
         section {
           background-color: whitesmoke;
