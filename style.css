@@ -103,16 +103,14 @@ img {
       line-height: 1.5;
       overflow-x: hidden;
       background-image: url("background.png");
+      background: url("background.png") center center fixed no-repeat;
+      background-size: cover;
       background-color: var(--bg-black-50);
       background-position: inherit;
-       background: url("background.png") center center fixed no-repeat;
-            background-size: cover;
-
         }
         section {
-                margin: 0;
-      padding: 0;
           background-color: whitesmoke;
+          margin: 0;
       vertical-align: middle;
       max-width: 500%;
     }
@@ -171,7 +169,7 @@ img {
         transform: translateY(100%);
       }
       .intro-text {
-        color: rgb(233, 233, 233);
+        color: whitesmoke;
         font-family: "Heebo", sans-serif;
         font-size: 3rem;
       }
@@ -815,5 +813,12 @@ img {
 }
 .btn-3:after{
   border-radius: 30px;
+}
+.submit-btn{
+  margin: 0;
+  margin-top: 100px;
+  text-align: center;
+  display: inline-block;
+
 }
 
