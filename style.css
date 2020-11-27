@@ -121,7 +121,7 @@ img {
     
   .landing {
       min-height: 100vh;
-      background: url("../images/background.png");
+      background: url("background.png");
       background-size: cover;
       padding: 0rem 5rem;
     }
@@ -356,7 +356,7 @@ img {
       .banner{
         position: relative;
         min-height: 100vh;
-        background: url(../background.png);
+        background: url("background.png");
         background-size: cover;
         display: flex;
         justify-content: space-between;
