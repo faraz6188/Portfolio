@@ -110,6 +110,8 @@ img {
 
         }
         section {
+                margin: 0;
+      padding: 0;
           background-color: whitesmoke;
       vertical-align: middle;
       max-width: 500%;
