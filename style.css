@@ -821,4 +821,26 @@ img {
   display: inline-block;
 
 }
+.btn-7{
+  padding: 20px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #6b0d0d;
+  background-color: transparent;
+  line-height: 1.5;
+  cursor: pointer;
+  border-radius: 30px;
+  transition: all 0.3s ease;
+  display: inline-table;
+  border: none;
+}
+.btn-7:after{
+border-radius: 30px;
+}
+.btn-7:hover{
+background-color: rgb(255, 52, 16);
+color: whitesmoke;
+font-weight: 500;
+border-color: 30 px solid orange;
+}
 
