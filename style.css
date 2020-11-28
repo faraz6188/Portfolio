@@ -519,7 +519,7 @@ img {
         font-size: 16px;
         color: var(--text-black-600);
         text-transform: capitalize;
-        margin: 0 0 10px;
+        margin: 0 0 30px;
     }
     .about-section .skills .skill-item .progress{
         height: 20px;
