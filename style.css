@@ -102,11 +102,12 @@ img {
       font-size: 16px;
       line-height: 1.5;
       overflow-x: hidden;
-      background-image: url("background.png");
-      background: url("background.png") center center fixed no-repeat;
-      background-size: cover;
+      /* background-image: url("background.png");*/
+      /* background: url("background.png") center center fixed no-repeat; */
+      background-size: cover; 
       background-color: var(--bg-black-50);
       background-position: inherit;
+      background-color: whitesmoke;
         }
         section {
           background-color: whitesmoke;
@@ -192,8 +193,8 @@ img {
         left: 0;
         height: 4rem;
         padding: 0 100px;
-        background: black;
-        width: 100%;
+        /* background: whitesmoke; */
+        max-width: 100%;
         box-sizing: border-box;
       }
       .logo{
@@ -804,7 +805,7 @@ img {
     font-size: 16px;
     font-weight: 500;
     color: whitesmoke;
-    background-color: t rgb(14, 14, 79);
+    /* background-color: t rgb(14, 14, 79); */
     line-height: 1.5;
     cursor: pointer;
     border-radius: 30px;
@@ -812,9 +813,9 @@ img {
     display: inline-block;
     border: none;
 }
-.btn-3:after{
+/* .btn-3:after{
   border-radius: 30px;
-}
+} */
 .submit-btn{
   margin: 0;
   margin-top: 100px;
@@ -843,5 +844,9 @@ background-color: rgb(255, 52, 16);
 color: whitesmoke;
 font-weight: 500;
 border-color: 30 px solid orange;
+}
+header {
+  width: 100%;
+  height: auto;
 }
 
