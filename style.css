@@ -849,4 +849,21 @@ header {
   width: 100%;
   height: auto;
 }
+form {
+  margin: 20px 2px;
+}
+.contact-wrap {
+  margin: 20px 2px;
+}
+.form-group{
+  margin: 80px 20px;
+  border-color: #000000;
+  padding: auto;
 
+}
+input{
+  font-size: larger;
+}
+textarea{
+  font-size: larger;
+}
