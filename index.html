@@ -303,5 +303,89 @@
       </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.5.1/gsap.min.js"></script>
     <script src="app.js"></script>
+    <script>// Function to set a cookie
+function setCookie(name, value, daysToExpire) {
+    const expires = new Date();
+    expires.setTime(expires.getTime() + (daysToExpire * 24 * 60 * 60 * 1000));
+    const expiresStr = "expires=" + expires.toUTCString();
+    document.cookie = name + "=" + value + ";" + expiresStr + ";path=/";
+}
+
+// Function to get a cookie
+function getCookie(name) {
+    const nameEQ = name + "=";
+    const ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+}
+
+// Function to generate a unique visitor ID
+function generateVisitorId() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+// Function to update visitor count in localStorage
+function updateVisitorCount() {
+    // Get current visitor count from localStorage or initialize to 0
+    let visitorCount = parseInt(localStorage.getItem('visitorCount') || '0');
+    
+    // Check if visitor has a cookie
+    let visitorId = getCookie('visitor_id');
+    
+    // If no cookie, increment visitor count and set cookie
+    if (!visitorId) {
+        visitorId = generateVisitorId();
+        setCookie('visitor_id', visitorId, 30); // Cookie expires in 30 days
+        visitorCount++;
+        localStorage.setItem('visitorCount', visitorCount.toString());
+        console.log('New visitor detected. Total visitors:', visitorCount);
+    } else {
+        console.log('Returning visitor detected. Visitor ID:', visitorId);
+    }
+    
+    // Display visitor count on the website
+    displayVisitorCount(visitorCount);
+}
+
+// Function to display visitor count
+function displayVisitorCount(count) {
+    // Create or update the visitor count element
+    let visitorCountElement = document.getElementById('visitorCount');
+    
+    if (!visitorCountElement) {
+        visitorCountElement = document.createElement('div');
+        visitorCountElement.id = 'visitorCount';
+        visitorCountElement.className = 'visitor-count';
+        document.body.appendChild(visitorCountElement);
+    }
+    
+    visitorCountElement.innerHTML = `
+        <p>Visitor Count: ${count}</p>
+        <p>You are visitor number <strong>${count}</strong>!</p>
+    `;
+}
+
+// Initialize visitor tracking when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    updateVisitorCount();
+    
+    // Optional: Track visitor behavior
+    document.addEventListener('click', function(e) {
+        const visitorId = getCookie('visitor_id');
+        if (visitorId) {
+            console.log('Visitor', visitorId, 'clicked on:', e.target);
+        }
+    });
+});</script>
+
+
   </body>
 </html>
