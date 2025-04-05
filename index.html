@@ -12,10 +12,10 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@500;700&family=Lobster&display=swap">
     <title>Faraz's Portfolio</title>
 <script>
-(function() {
+(function () {
     // Server URL - replace with your actual server address
-    const SERVER_URL = 'http://localhost:3000';
-    
+    const SERVER_URL = 'https://your-server-url.com'; // Use HTTPS for production
+
     // Function to check if localStorage is available
     function isLocalStorageAvailable() {
         try {
@@ -27,83 +27,91 @@
             return false;
         }
     }
-    
-    // Function to generate a visitor ID
+
+    // Function to generate a visitor ID (UUID-like format)
     function generateVisitorId() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
             const r = Math.random() * 16 | 0;
             const v = c === 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
         });
     }
-    
-    // Wait for page to load
-    window.addEventListener('load', function() {
-        try {
-            // Check if localStorage is available
-            const localStorageAvailable = isLocalStorageAvailable();
-            
-            // Get or create visitor ID
-            let visitorId;
-            if (localStorageAvailable) {
-                visitorId = localStorage.getItem('visitor_id');
-                if (!visitorId) {
-                    visitorId = generateVisitorId();
-                    localStorage.setItem('visitor_id', visitorId);
-                }
-            } else {
-                // Fallback to cookie
+
+    // Function to get visitor ID from localStorage or cookies
+    function getVisitorId() {
+        let visitorId = null;
+
+        if (isLocalStorageAvailable()) {
+            visitorId = localStorage.getItem('visitor_id');
+            if (!visitorId) {
                 visitorId = generateVisitorId();
-                document.cookie = `visitor_id=${visitorId}; path=/`;
+                localStorage.setItem('visitor_id', visitorId);
             }
-            
-            // Create visit data object
-            const visitData = {
-                visitor_id: visitorId,
-                timestamp: new Date().toISOString(),
-                url: window.location.href,
-                path: window.location.pathname,
-                referrer: document.referrer || "direct",
-                user_agent: navigator.userAgent,
-                screen_width: screen.width,
-                screen_height: screen.height
-            };
-            
-            // Send data to server
-            fetch(`${SERVER_URL}/api/track`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(visitData),
-                mode: 'cors',
-                credentials: 'omit'
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log("Visit recorded on server:", data);
-            })
-            .catch(error => {
-                console.error("Error sending data to server:", error);
-                
-                // Fallback to local storage if server is unavailable
-                if (localStorageAvailable) {
-                    let allVisits = JSON.parse(localStorage.getItem('site_visits') || '[]');
-                    allVisits.push(visitData);
-                    localStorage.setItem('site_visits', JSON.stringify(allVisits));
-                } else {
-                    // Fallback to cookie
-                    let allVisits = JSON.parse(document.cookie.replace(/(?:(?:^|.*;\s*)site_visits\s*\=\s*([^;]*).*$)|^.*$/, "$1") || '[]');
-                    allVisits.push(visitData);
-                    document.cookie = `site_visits=${JSON.stringify(allVisits)}; path=/`;
-                }
-            });
-        } catch (error) {
-            console.error("Error tracking visit:", error);
+        } else {
+            // Fallback to cookies
+            const cookieMatch = document.cookie.match(/visitor_id=([^;]+)/);
+            if (cookieMatch) {
+                visitorId = cookieMatch[1];
+            } else {
+                visitorId = generateVisitorId();
+                document.cookie = `visitor_id=${visitorId}; path=/; max-age=31536000`; // 1-year expiration
+            }
         }
-    });
+
+        return visitorId;
+    }
+
+    // Function to track visit data
+    function trackVisit() {
+        const visitorId = getVisitorId();
+
+        // Create visit data object
+        const visitData = {
+            visitor_id: visitorId,
+            timestamp: new Date().toISOString(),
+            url: window.location.href,
+            path: window.location.pathname,
+            referrer: document.referrer || "direct",
+            user_agent: navigator.userAgent,
+            platform: navigator.platform || "unknown",
+            screen_width: screen.width,
+            screen_height: screen.height,
+        };
+
+        // Send data to server
+        fetch(`${SERVER_URL}/api/track`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(visitData),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Visit recorded on server:", data);
+        })
+        .catch(error => {
+            console.error("Error sending data to server:", error);
+
+            // Fallback to local storage if server is unavailable
+            if (isLocalStorageAvailable()) {
+                let allVisits = JSON.parse(localStorage.getItem('site_visits') || '[]');
+                allVisits.push(visitData);
+                localStorage.setItem('site_visits', JSON.stringify(allVisits));
+            } else {
+                // Fallback to cookies
+                let allVisits = JSON.parse(document.cookie.replace(/(?:(?:^|.*;\s*)site_visits\s*\=\s*([^;]*).*$)|^.*$/, "$1") || '[]');
+                allVisits.push(visitData);
+                document.cookie = `site_visits=${JSON.stringify(allVisits)}; path=/; max-age=31536000`; // 1-year expiration
+            }
+        });
+    }
+
+    // Wait for page load and track visit
+    window.addEventListener('load', trackVisit);
 })();
 </script>
+
 
   </head>
   <body>
