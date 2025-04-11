@@ -11,100 +11,191 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" >
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@500;700&family=Lobster&display=swap">
     <title>Faraz's Portfolio</title>
-<script>
-<script>
-(function() {
-    // Server URL - replace with your actual server address
-    const SERVER_URL = 'http://localhost:3000';
+<script>// Analytics Tracking Script
+// Add this to your website to track visitors
+
+// Configuration
+const TRACKING_SERVER = "http://localhost:1000"; // Use your server address here
+const DEBUG = false; // Set to false in production
+
+// Generate a visitor ID or retrieve from storage
+function getVisitorId() {
+  let visitorId = localStorage.getItem('visitor_id');
+  if (!visitorId) {
+    visitorId = 'v' + Math.random().toString(36).substring(2, 15) + 
+                Math.random().toString(36).substring(2, 15);
+    localStorage.setItem('visitor_id', visitorId);
+  }
+  return visitorId;
+}
+
+// Detect browser language
+function getBrowserLanguage() {
+  return navigator.language || navigator.userLanguage || 'unknown';
+}
+
+// Track page view
+function trackPageView() {
+  const visitorId = getVisitorId();
+  
+  const visitData = {
+    visitor_id: visitorId,
+    timestamp: new Date().toISOString(),
+    url: window.location.href,
+    path: window.location.pathname,
+    referrer: document.referrer || 'direct',
+    user_agent: navigator.userAgent,
+    screen_width: window.screen.width,
+    screen_height: window.screen.height,
+    language: getBrowserLanguage(),
+    event_type: 'page_view'
+  };
+  
+  if (DEBUG) console.log('Sending tracking data:', visitData);
+
+  // Send tracking data using fetch API
+  fetch(`${TRACKING_SERVER}/api/track`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(visitData),
+    mode: 'cors'
+  })
+  .then(response => {
+    if (DEBUG) console.log('Tracking data sent successfully');
+  })
+  .catch(error => {
+    if (DEBUG) console.log('Error sending tracking data:', error);
+    // Fallback to tracking pixel if fetch fails
+    sendTrackingPixel(visitData);
+  });
+
+  // Record session start time for duration tracking
+  if (!sessionStorage.getItem('session_start')) {
+    sessionStorage.setItem('session_start', Date.now().toString());
+  }
+}
+
+// Send tracking pixel as fallback method
+function sendTrackingPixel(visitData) {
+  if (DEBUG) console.log('Fallback to tracking pixel');
+  const pixelUrl = `${TRACKING_SERVER}/api/track-pixel?data=${encodeURIComponent(JSON.stringify(visitData))}`;
+  const img = new Image();
+  img.src = pixelUrl;
+  img.style.display = 'none';
+  document.body.appendChild(img);
+}
+
+// Track session duration when user leaves page
+function trackSessionDuration() {
+  const sessionStart = parseInt(sessionStorage.getItem('session_start') || '0');
+  if (!sessionStart) return;
+  
+  const duration = Math.floor((Date.now() - sessionStart) / 1000); // duration in seconds
+  const visitorId = getVisitorId();
+  
+  const durationData = {
+    visitor_id: visitorId,
+    timestamp: new Date().toISOString(),
+    url: window.location.href,
+    path: window.location.pathname,
+    event_type: 'session_duration',
+    duration: duration
+  };
+  
+  // Use sendBeacon if available for more reliable sending during page unload
+  if (navigator.sendBeacon) {
+    const blob = new Blob([JSON.stringify(durationData)], {type: 'application/json'});
+    navigator.sendBeacon(`${TRACKING_SERVER}/api/track`, blob);
+  } else {
+    // Fallback to synchronous XHR which is more reliable during page unload than fetch
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${TRACKING_SERVER}/api/track`, false); // Synchronous
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.send(JSON.stringify(durationData));
+  }
+}
+
+// Update session duration periodically
+function setupDurationTracking() {
+  // Send duration update every 30 seconds
+  setInterval(() => {
+    const sessionStart = parseInt(sessionStorage.getItem('session_start') || '0');
+    if (!sessionStart) return;
     
-    // Function to check if localStorage is available
-    function isLocalStorageAvailable() {
-        try {
-            const testKey = 'test';
-            localStorage.setItem(testKey, testKey);
-            localStorage.removeItem(testKey);
-            return true;
-        } catch (error) {
-            return false;
-        }
-    }
+    const duration = Math.floor((Date.now() - sessionStart) / 1000); // duration in seconds
+    const visitorId = getVisitorId();
     
-    // Function to generate a visitor ID
-    function generateVisitorId() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            const r = Math.random() * 16 | 0;
-            const v = c === 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
-    }
+    const durationData = {
+      visitor_id: visitorId,
+      timestamp: new Date().toISOString(),
+      url: window.location.href,
+      path: window.location.pathname,
+      event_type: 'session_duration',
+      duration: duration
+    };
     
-    // Wait for page to load
-    window.addEventListener('load', function() {
-        try {
-            // Check if localStorage is available
-            const localStorageAvailable = isLocalStorageAvailable();
-            
-            // Get or create visitor ID
-            let visitorId;
-            if (localStorageAvailable) {
-                visitorId = localStorage.getItem('visitor_id');
-                if (!visitorId) {
-                    visitorId = generateVisitorId();
-                    localStorage.setItem('visitor_id', visitorId);
-                }
-            } else {
-                // Fallback to cookie
-                visitorId = generateVisitorId();
-                document.cookie = `visitor_id=${visitorId}; path=/`;
-            }
-            
-            // Create visit data object
-            const visitData = {
-                visitor_id: visitorId,
-                timestamp: new Date().toISOString(),
-                url: window.location.href,
-                path: window.location.pathname,
-                referrer: document.referrer || "direct",
-                user_agent: navigator.userAgent,
-                screen_width: screen.width,
-                screen_height: screen.height
-            };
-            
-            // Send data to server
-            fetch(`${SERVER_URL}/api/track`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(visitData),
-                mode: 'cors',
-                credentials: 'omit'
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log("Visit recorded on server:", data);
-            })
-            .catch(error => {
-                console.error("Error sending data to server:", error);
-                
-                // Fallback to local storage if server is unavailable
-                if (localStorageAvailable) {
-                    let allVisits = JSON.parse(localStorage.getItem('site_visits') || '[]');
-                    allVisits.push(visitData);
-                    localStorage.setItem('site_visits', JSON.stringify(allVisits));
-                } else {
-                    // Fallback to cookie
-                    let allVisits = JSON.parse(document.cookie.replace(/(?:(?:^|.*;\s*)site_visits\s*\=\s*([^;]*).*$)|^.*$/, "$1") || '[]');
-                    allVisits.push(visitData);
-                    document.cookie = `site_visits=${JSON.stringify(allVisits)}; path=/`;
-                }
-            });
-        } catch (error) {
-            console.error("Error tracking visit:", error);
-        }
+    fetch(`${TRACKING_SERVER}/api/update-duration`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(durationData),
+      mode: 'cors'
+    }).catch(error => {
+      if (DEBUG) console.log('Error sending duration data:', error);
     });
-})();
-</script>
+  }, 30000); // Update every 30 seconds
+}
+
+// Track user interactions (clicks)
+function setupInteractionTracking() {
+  document.addEventListener('click', function(event) {
+    // Only track clicks on links and buttons
+    if (event.target.tagName === 'A' || event.target.tagName === 'BUTTON') {
+      const interactionData = {
+        visitor_id: getVisitorId(),
+        timestamp: new Date().toISOString(),
+        url: window.location.href,
+        path: window.location.pathname,
+        event_type: 'interaction',
+        element_type: event.target.tagName.toLowerCase(),
+        element_id: event.target.id || '',
+        element_class: event.target.className || '',
+        element_text: event.target.innerText || '',
+        element_href: event.target.tagName === 'A' ? event.target.href : ''
+      };
+      
+      // Use fetch for interaction events
+      fetch(`${TRACKING_SERVER}/api/track`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(interactionData),
+        mode: 'cors'
+      }).catch(error => {
+        if (DEBUG) console.log('Error sending interaction data:', error);
+      });
+    }
+  });
+}
+
+// Initialize tracking
+document.addEventListener('DOMContentLoaded', function() {
+  // Track initial page view
+  trackPageView();
+  
+  // Set up periodic duration tracking
+  setupDurationTracking();
+  
+  // Set up interaction tracking
+  setupInteractionTracking();
+  
+  // Track when user leaves the page
+  window.addEventListener('beforeunload', trackSessionDuration);
+});</script>
 
 
   </head>
